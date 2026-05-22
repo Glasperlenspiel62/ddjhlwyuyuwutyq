@@ -537,6 +537,48 @@
     #stats-table td.day-pre { background: var(--bg); opacity: 0.18; }
     #stats-table td.habit-name-cell.deleted-name { font-style: italic; opacity: 0.5; }
 
+    /* ── HABIT ACTION SHEET ── */
+    #habit-action-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      align-items: flex-end; justify-content: center;
+    }
+    #habit-action-modal.open { display: flex; }
+    #habit-action-sheet {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+      width: 100%; max-width: 500px;
+      animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    #habit-action-title {
+      font-size: 13px; font-weight: 700; color: var(--text-dim);
+      margin-bottom: 14px; word-break: break-word;
+      padding: 0 2px;
+    }
+    #habit-action-archive {
+      width: 100%; padding: 16px; margin-bottom: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      cursor: pointer; text-align: left; transition: all 0.15s;
+    }
+    #habit-action-archive:active { transform: scale(0.98); }
+    #habit-action-delete {
+      width: 100%; padding: 16px; margin-bottom: 10px;
+      background: var(--surface2); border: 1px solid rgba(255,85,85,0.5);
+      border-radius: 10px; font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; color: #ff5555;
+      cursor: pointer; text-align: left; transition: all 0.15s;
+    }
+    #habit-action-delete:active { transform: scale(0.98); }
+    #habit-action-cancel {
+      width: 100%; padding: 14px; background: none; margin-top: 4px;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 14px;
+      color: var(--text-dim); cursor: pointer;
+    }
+
     /* ── HABIT EDIT MODAL ── */
     #habit-edit-modal {
       display: none; position: fixed; inset: 0; z-index: 200;
@@ -659,6 +701,15 @@
     </div>
     <button id="habit-add-confirm">Додати</button>
     <button id="habit-add-cancel">Скасувати</button>
+  </div>
+</div>
+
+<div id="habit-action-modal">
+  <div id="habit-action-sheet">
+    <div id="habit-action-title"></div>
+    <button id="habit-action-archive">↓ Прибрати зі списку</button>
+    <button id="habit-action-delete">🗑 Видалити повністю</button>
+    <button id="habit-action-cancel">Скасувати</button>
   </div>
 </div>
 
@@ -1007,21 +1058,48 @@ document.addEventListener('change', e => {
 
 document.addEventListener('click', e => {
   const hd = e.target.closest('.habit-delete');
-  if (hd) {
-    const id = hd.dataset.id;
-    const h = habits.find(h => h.id === id);
-    if (h) deletedHabits.push({...h, deletedAt: Date.now()});
-    habits = habits.filter(h => h.id !== id);
-    // keep habitLog intact so stats still show historical data
-    saveHabits(); renderHabits();
-    if (currentList==='stats') renderStats();
-    return;
-  }
+  if (hd) { openHabitActionModal(hd.dataset.id); return; }
   const td = e.target.closest('.task-only-delete');
   if (td) {
     tasks[td.dataset.list] = tasks[td.dataset.list].filter(t => t.id!==td.dataset.id);
     saveTasks(); renderAll();
   }
+});
+
+// ─── HABIT ACTION SHEET ───────────────────────────────────────────
+let actionHabitId = null;
+
+function openHabitActionModal(id) {
+  const h = habits.find(h => h.id === id);
+  if (!h) return;
+  actionHabitId = id;
+  document.getElementById('habit-action-title').textContent = h.name;
+  document.getElementById('habit-action-modal').classList.add('open');
+}
+function closeHabitActionModal() {
+  document.getElementById('habit-action-modal').classList.remove('open');
+  actionHabitId = null;
+}
+document.getElementById('habit-action-archive').addEventListener('click', () => {
+  const h = habits.find(h => h.id === actionHabitId);
+  if (h) deletedHabits.push({...h, deletedAt: Date.now()});
+  habits = habits.filter(h => h.id !== actionHabitId);
+  saveHabits(); renderHabits();
+  if (currentList === 'stats') renderStats();
+  closeHabitActionModal();
+});
+document.getElementById('habit-action-delete').addEventListener('click', () => {
+  const id = actionHabitId;
+  habits = habits.filter(h => h.id !== id);
+  deletedHabits = deletedHabits.filter(h => h.id !== id);
+  Object.keys(habitLog).forEach(k => { if (habitLog[k]) delete habitLog[k][id]; });
+  saveHabits(); renderHabits();
+  if (currentList === 'stats') renderStats();
+  closeHabitActionModal();
+});
+document.getElementById('habit-action-cancel').addEventListener('click', closeHabitActionModal);
+document.getElementById('habit-action-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('habit-action-modal')) closeHabitActionModal();
 });
 
 // ─── HABIT LONG PRESS (EDIT) ──────────────────────────────────────
