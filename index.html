@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0f14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TaskFlow" />
+  <title>TaskFlow</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f14;
+      --surface: #17171f;
+      --surface2: #1e1e28;
+      --border: #2a2a38;
+      --accent-today: #ff6b35;
+      --accent-soon: #f7c948;
+      --accent-someday: #6c8fff;
+      --accent-done: #4ecdc4;
+      --text: #e8e8f0;
+      --text-dim: #7070a0;
+      --text-faint: #3a3a55;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: env(safe-area-inset-top, 0px) 20px 0;
+      background: var(--bg);
+    }
+    #header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0 0;
+    }
+    #app-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    #btn-archive {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-dim); font-family: 'Syne', sans-serif;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+      padding: 7px 13px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    #btn-archive:active { transform: scale(0.95); opacity: 0.8; }
+
+    /* ── TABS ── */
+    #tabs {
+      display: flex; gap: 0;
+      margin-top: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 4px; background: none; border: none;
+      font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--text-faint); cursor: pointer;
+      position: relative; transition: color 0.2s;
+    }
+    .tab-btn::after {
+      content: ''; position: absolute; bottom: -1px; left: 10%; right: 10%;
+      height: 2px; border-radius: 2px;
+      background: transparent; transition: background 0.2s;
+    }
+    .tab-btn.active { color: var(--text); }
+    .tab-btn[data-list="today"].active::after { background: var(--accent-today); }
+    .tab-btn[data-list="soon"].active::after  { background: var(--accent-soon); }
+    .tab-btn[data-list="someday"].active::after { background: var(--accent-someday); }
+    .tab-btn[data-list="done"].active::after  { background: var(--accent-done); }
+    .tab-count {
+      display: inline-block; margin-left: 4px;
+      font-size: 10px; opacity: 0.6;
+    }
+
+    /* ── SLIDES ── */
+    #header-placeholder { height: 120px; }
+    #slides-wrapper {
+      position: fixed;
+      top: 120px; left: 0; right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
+      overflow: hidden;
+    }
+    #slides-track {
+      display: flex; width: 400%;
+      height: 100%;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      will-change: transform;
+    }
+    .slide {
+      width: 25%; height: 100%;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── TASK CARD ── */
+    .task-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 14px 14px 12px;
+      margin-bottom: 10px;
+      display: flex; align-items: flex-start; gap: 12px;
+      position: relative;
+      transition: transform 0.15s, opacity 0.15s, border-color 0.2s;
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .task-card:active { transform: scale(0.98); }
+    .task-card.hold-active {
+      border-color: var(--accent-soon);
+      box-shadow: 0 0 0 2px rgba(247,201,72,0.25);
+      transform: scale(1.01);
+    }
+
+    .task-checkbox {
+      width: 22px; height: 22px; min-width: 22px;
+      border-radius: 6px; border: 2px solid var(--border);
+      cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: var(--surface2); margin-top: 1px;
+      transition: all 0.2s; position: relative;
+    }
+    .task-checkbox:checked {
+      background: var(--accent-done);
+      border-color: var(--accent-done);
+    }
+    .task-checkbox:checked::after {
+      content: ''; position: absolute;
+      left: 5px; top: 2px; width: 7px; height: 11px;
+      border: 2px solid #0f0f14; border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-text { font-size: 15px; line-height: 1.5; word-break: break-word; }
+    .task-text.done-text { color: var(--text-dim); text-decoration: line-through; }
+    .task-meta { font-size: 11px; color: var(--text-faint); font-family: 'Space Mono', monospace; margin-top: 5px; }
+    .task-meta span { display: inline-block; margin-right: 10px; }
+    .task-meta .done-date { color: var(--accent-done); opacity: 0.7; }
+
+    /* ── ADD TASK AREA ── */
+    .add-area {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 12px);
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+      display: none;
+    }
+    .add-area.visible { display: block; }
+    .add-row {
+      display: flex; gap: 10px; align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px 4px 4px 14px;
+    }
+    .add-input {
+      flex: 1; background: none; border: none; outline: none;
+      font-family: 'Syne', sans-serif; font-size: 15px;
+      color: var(--text); padding: 10px 0;
+    }
+    .add-input::placeholder { color: var(--text-faint); }
+    .add-btn {
+      width: 40px; height: 40px; border-radius: 10px;
+      border: none; cursor: pointer; font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s;
+    }
+    .add-btn:active { transform: scale(0.9); }
+    #add-today-btn { background: var(--accent-today); color: #fff; }
+    #add-soon-btn  { background: var(--accent-soon);  color: #0f0f14; }
+    #add-someday-btn { background: var(--accent-someday); color: #fff; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text-faint); font-size: 14px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* ── MOVE MODAL ── */
+    #move-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      align-items: flex-end; justify-content: center;
+    }
+    #move-modal.open { display: flex; }
+    #move-sheet {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+      width: 100%; max-width: 500px;
+      animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    #move-sheet h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; color: var(--text-dim); }
+    .move-option {
+      width: 100%; padding: 16px; margin-bottom: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      cursor: pointer; text-align: left; transition: all 0.15s;
+    }
+    .move-option:active { transform: scale(0.98); }
+    .move-option.opt-today  { border-color: var(--accent-today); color: var(--accent-today); }
+    .move-option.opt-soon   { border-color: var(--accent-soon);  color: var(--accent-soon); }
+    #move-cancel {
+      width: 100%; padding: 14px; background: none;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 14px;
+      color: var(--text-dim); cursor: pointer; margin-top: 4px;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 10px 18px;
+      font-size: 13px; font-weight: 700; color: var(--text);
+      opacity: 0; transition: all 0.3s; z-index: 300; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Accent dots on tab counts */
+    .tab-btn[data-list="today"] .tab-count { color: var(--accent-today); }
+    .tab-btn[data-list="soon"] .tab-count  { color: var(--accent-soon); }
+    .tab-btn[data-list="someday"] .tab-count { color: var(--accent-someday); }
+    .tab-btn[data-list="done"] .tab-count  { color: var(--accent-done); }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-inner">
+    <div id="app-title">TaskFlow</div>
+    <button id="btn-archive">⬇ Архів</button>
+  </div>
+  <div id="tabs">
+    <button class="tab-btn active" data-list="today">Сьогодні<span class="tab-count" id="count-today"></span></button>
+    <button class="tab-btn" data-list="soon">Скоро<span class="tab-count" id="count-soon"></span></button>
+    <button class="tab-btn" data-list="someday">Колись<span class="tab-count" id="count-someday"></span></button>
+    <button class="tab-btn" data-list="done">Виконані<span class="tab-count" id="count-done"></span></button>
+  </div>
+</div>
+
+<div id="slides-wrapper">
+  <div id="slides-track">
+    <div class="slide" id="slide-today"></div>
+    <div class="slide" id="slide-soon"></div>
+    <div class="slide" id="slide-someday"></div>
+    <div class="slide" id="slide-done"></div>
+  </div>
+</div>
+
+<!-- Add areas per list -->
+<div class="add-area visible" id="add-today">
+  <div class="add-row">
+    <input class="add-input" id="input-today" placeholder="Нова задача на сьогодні…" maxlength="300" />
+    <button class="add-btn" id="add-today-btn">+</button>
+  </div>
+</div>
+<div class="add-area" id="add-soon">
+  <div class="add-row">
+    <input class="add-input" id="input-soon" placeholder="Нова задача на скоро…" maxlength="300" />
+    <button class="add-btn" id="add-soon-btn">+</button>
+  </div>
+</div>
+<div class="add-area" id="add-someday">
+  <div class="add-row">
+    <input class="add-input" id="input-someday" placeholder="Нова задача колись…" maxlength="300" />
+    <button class="add-btn" id="add-someday-btn">+</button>
+  </div>
+</div>
+
+<!-- Move modal -->
+<div id="move-modal">
+  <div id="move-sheet">
+    <h3>Перенести задачу до…</h3>
+    <button class="move-option opt-today" id="move-to-today">⚡ Сьогодні</button>
+    <button class="move-option opt-soon" id="move-to-soon">🔜 Скоро</button>
+    <button id="move-cancel">Скасувати</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────
+const LISTS = ['today','soon','someday','done'];
+let tasks = { today:[], soon:[], someday:[], done:[] };
+let currentList = 'today';
+let currentSlide = 0;
+let moveTargetId = null;
+
+function loadTasks() {
+  try {
+    const saved = localStorage.getItem('taskflow_tasks');
+    if (saved) tasks = JSON.parse(saved);
+    LISTS.forEach(l => { if (!tasks[l]) tasks[l] = []; });
+  } catch(e) {}
+}
+function saveTasks() {
+  localStorage.setItem('taskflow_tasks', JSON.stringify(tasks));
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────
+function fmt(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString('uk-UA', {day:'2-digit',month:'2-digit',year:'2-digit'})
+       + ' ' + d.toLocaleTimeString('uk-UA', {hour:'2-digit',minute:'2-digit'});
+}
+
+function renderAll() {
+  LISTS.forEach(list => {
+    const el = document.getElementById('slide-' + list);
+    const items = tasks[list];
+    if (!items.length) {
+      const labels = {today:'Немає задач на сьогодні',soon:'Поки нічого на скоро',someday:'Жодної задачі «колись»',done:'Ще нічого не виконано'};
+      const icons  = {today:'⚡',soon:'🔜',someday:'🌙',done:'✅'};
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">${icons[list]}</div>${labels[list]}</div>`;
+      return;
+    }
+    el.innerHTML = items.map(t => {
+      const isDone = list === 'done';
+      const meta = isDone
+        ? `<span>створено: ${fmt(t.created)}</span><span class="done-date">✓ ${fmt(t.completed)}</span>`
+        : `<span>${fmt(t.created)}</span>`;
+      return `
+      <div class="task-card" data-id="${t.id}" data-list="${list}">
+        <input type="checkbox" class="task-checkbox" ${isDone?'checked':''} data-id="${t.id}" data-list="${list}" />
+        <div class="task-body">
+          <div class="task-text ${isDone?'done-text':''}">${escHtml(t.text)}</div>
+          <div class="task-meta">${meta}</div>
+        </div>
+      </div>`;
+    }).join('');
+    // attach long-press
+    el.querySelectorAll('.task-card').forEach(card => attachLongPress(card));
+  });
+  updateCounts();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateCounts() {
+  LISTS.forEach(l => {
+    const cnt = tasks[l].length;
+    document.getElementById('count-' + l).textContent = cnt ? cnt : '';
+  });
+}
+
+// ─── ADD TASK ────────────────────────────────────────────────────
+function addTask(list) {
+  const input = document.getElementById('input-' + list);
+  const text = input.value.trim();
+  if (!text) return;
+  tasks[list].unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), text, created: Date.now() });
+  saveTasks(); renderAll();
+  input.value = '';
+  input.focus();
+}
+
+['today','soon','someday'].forEach(list => {
+  document.getElementById('add-' + list + '-btn').addEventListener('click', () => addTask(list));
+  document.getElementById('input-' + list).addEventListener('keydown', e => { if (e.key === 'Enter') addTask(list); });
+});
+
+// ─── CHECKBOX ────────────────────────────────────────────────────
+document.addEventListener('change', e => {
+  if (!e.target.classList.contains('task-checkbox')) return;
+  const id = e.target.dataset.id;
+  const list = e.target.dataset.list;
+  if (list === 'done') {
+    // restore
+    const idx = tasks.done.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    const task = { ...tasks.done[idx] };
+    delete task.completed;
+    // find original list (we store it)
+    const origList = task.origList || 'today';
+    delete task.origList;
+    tasks.done.splice(idx, 1);
+    tasks[origList].unshift(task);
+    saveTasks(); renderAll();
+    toast('Повернуто до «' + listLabel(origList) + '»');
+  } else {
+    const idx = tasks[list].findIndex(t => t.id === id);
+    if (idx < 0) return;
+    const task = { ...tasks[list][idx], completed: Date.now(), origList: list };
+    tasks[list].splice(idx, 1);
+    tasks.done.unshift(task);
+    saveTasks(); renderAll();
+  }
+});
+
+// ─── LONG PRESS ──────────────────────────────────────────────────
+function attachLongPress(card) {
+  const list = card.dataset.list;
+  const id = card.dataset.id;
+  let timer;
+
+  const start = () => {
+    timer = setTimeout(() => {
+      card.classList.add('hold-active');
+      handleLongPress(id, list);
+    }, 500);
+  };
+  const cancel = () => {
+    clearTimeout(timer);
+    card.classList.remove('hold-active');
+  };
+
+  card.addEventListener('touchstart', start, {passive:true});
+  card.addEventListener('touchend', cancel);
+  card.addEventListener('touchmove', cancel);
+  card.addEventListener('mousedown', start);
+  card.addEventListener('mouseup', cancel);
+  card.addEventListener('mouseleave', cancel);
+}
+
+function handleLongPress(id, list) {
+  if (list === 'soon') {
+    // move to today
+    moveTask(id, list, 'today');
+    toast('Переміщено до «Сьогодні»');
+  } else if (list === 'someday') {
+    // show modal
+    moveTargetId = { id, list };
+    document.getElementById('move-modal').classList.add('open');
+  } else if (list === 'done') {
+    // restore
+    const idx = tasks.done.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    const task = { ...tasks.done[idx] };
+    const origList = task.origList || 'today';
+    delete task.completed; delete task.origList;
+    tasks.done.splice(idx, 1);
+    tasks[origList].unshift(task);
+    saveTasks(); renderAll();
+    toast('Повернуто до «' + listLabel(origList) + '»');
+  }
+}
+
+function moveTask(id, fromList, toList) {
+  const idx = tasks[fromList].findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const task = tasks[fromList].splice(idx, 1)[0];
+  tasks[toList].unshift(task);
+  saveTasks(); renderAll();
+}
+
+document.getElementById('move-to-today').addEventListener('click', () => {
+  if (!moveTargetId) return;
+  moveTask(moveTargetId.id, moveTargetId.list, 'today');
+  closeMoveModal(); toast('Переміщено до «Сьогодні»');
+});
+document.getElementById('move-to-soon').addEventListener('click', () => {
+  if (!moveTargetId) return;
+  moveTask(moveTargetId.id, moveTargetId.list, 'soon');
+  closeMoveModal(); toast('Переміщено до «Скоро»');
+});
+document.getElementById('move-cancel').addEventListener('click', closeMoveModal);
+document.getElementById('move-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('move-modal')) closeMoveModal();
+});
+function closeMoveModal() {
+  document.getElementById('move-modal').classList.remove('open');
+  moveTargetId = null;
+  document.querySelectorAll('.task-card.hold-active').forEach(c => c.classList.remove('hold-active'));
+}
+
+// ─── TABS & SWIPE ────────────────────────────────────────────────
+const slideOrder = ['today','soon','someday','done'];
+function goToSlide(idx) {
+  currentSlide = idx;
+  currentList = slideOrder[idx];
+  document.getElementById('slides-track').style.transform = `translateX(-${idx * 25}%)`;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+  // add areas
+  ['today','soon','someday'].forEach((l,i) => {
+    document.getElementById('add-' + l).classList.toggle('visible', i === idx);
+  });
+}
+
+document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+  btn.addEventListener('click', () => goToSlide(idx));
+});
+
+// Swipe
+let touchStartX = 0, touchStartY = 0, dragging = false;
+const wrapper = document.getElementById('slides-wrapper');
+wrapper.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  dragging = true;
+}, {passive:true});
+wrapper.addEventListener('touchend', e => {
+  if (!dragging) return;
+  dragging = false;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0 && currentSlide < 3) goToSlide(currentSlide + 1);
+    if (dx > 0 && currentSlide > 0) goToSlide(currentSlide - 1);
+  }
+}, {passive:true});
+
+// ─── ARCHIVE ─────────────────────────────────────────────────────
+document.getElementById('btn-archive').addEventListener('click', async () => {
+  const lines = [];
+  const labels = {today:'СЬОГОДНІ',soon:'СКОРО',someday:'КОЛИСЬ',done:'ВИКОНАНІ'};
+  lines.push('TASKFLOW — Архів ' + new Date().toLocaleString('uk-UA'));
+  lines.push('='.repeat(50));
+  LISTS.forEach(list => {
+    lines.push(''); lines.push('── ' + labels[list] + ' ──');
+    if (!tasks[list].length) { lines.push('  (порожньо)'); return; }
+    tasks[list].forEach(t => {
+      let line = `  [${list === 'done' ? 'x' : ' '}] ${t.text}`;
+      line += `\n      Створено: ${fmt(t.created)}`;
+      if (t.completed) line += `\n      Виконано: ${fmt(t.completed)}`;
+      lines.push(line);
+    });
+  });
+  const content = lines.join('\n');
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: `taskflow_archive_${new Date().toISOString().slice(0,10)}.txt`,
+      types: [{ description: 'Text file', accept: {'text/plain': ['.txt']} }]
+    });
+    const writable = await handle.createWritable();
+    await writable.write(content); await writable.close();
+    toast('Архів збережено ✓');
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      // fallback download
+      const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `taskflow_archive_${new Date().toISOString().slice(0,10)}.txt`;
+      a.click(); URL.revokeObjectURL(a.href);
+      toast('Архів завантажено ✓');
+    }
+  }
+});
+
+// ─── TOAST ───────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function listLabel(l) {
+  return {today:'Сьогодні',soon:'Скоро',someday:'Колись',done:'Виконані'}[l] || l;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+loadTasks(); renderAll();
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
