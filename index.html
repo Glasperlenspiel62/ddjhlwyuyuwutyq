@@ -22,6 +22,7 @@
       --accent-someday: #6c8fff;
       --accent-done: #4ecdc4;
       --accent-habit: #b57bee;
+      --accent-bad: #ff9f43;
       --text: #e8e8f0;
       --text-dim: #7070a0;
       --text-faint: #3a3a55;
@@ -98,22 +99,22 @@
       background: transparent; transition: background 0.2s;
     }
     .tab-btn.active { color: var(--text); }
-    .tab-btn[data-list="today"].active::after   { background: var(--accent-today); }
-    .tab-btn[data-list="soon"].active::after    { background: var(--accent-soon); }
-    .tab-btn[data-list="someday"].active::after { background: var(--accent-someday); }
-    .tab-btn[data-list="done"].active::after    { background: var(--accent-done); }
-    .tab-btn[data-list="habits"].active::after  { background: var(--accent-habit); }
-    .tab-btn[data-list="stats"].active::after   { background: var(--accent-someday); }
+    .tab-btn[data-list="today"].active::after   { background: var(--tab-accent, var(--accent-today)); }
+    .tab-btn[data-list="soon"].active::after    { background: var(--tab-accent, var(--accent-soon)); }
+    .tab-btn[data-list="someday"].active::after { background: var(--tab-accent, var(--accent-someday)); }
+    .tab-btn[data-list="done"].active::after    { background: var(--tab-accent, var(--accent-done)); }
+    .tab-btn[data-list="habits"].active::after  { background: var(--tab-accent, var(--accent-habit)); }
+    .tab-btn[data-list="stats"].active::after   { background: var(--tab-accent, var(--accent-someday)); }
 
     .tab-count {
       display: inline-block; margin-left: 4px;
       font-size: 10px; opacity: 0.7;
     }
-    .tab-btn[data-list="today"] .tab-count   { color: var(--accent-today); }
-    .tab-btn[data-list="soon"] .tab-count    { color: var(--accent-soon); }
-    .tab-btn[data-list="someday"] .tab-count { color: var(--accent-someday); }
-    .tab-btn[data-list="done"] .tab-count    { color: var(--accent-done); }
-    .tab-btn[data-list="habits"] .tab-count  { color: var(--accent-habit); }
+    .tab-btn[data-list="today"] .tab-count   { color: var(--tab-accent, var(--accent-today)); }
+    .tab-btn[data-list="soon"] .tab-count    { color: var(--tab-accent, var(--accent-soon)); }
+    .tab-btn[data-list="someday"] .tab-count { color: var(--tab-accent, var(--accent-someday)); }
+    .tab-btn[data-list="done"] .tab-count    { color: var(--tab-accent, var(--accent-done)); }
+    .tab-btn[data-list="habits"] .tab-count  { color: var(--tab-accent, var(--accent-habit)); }
 
     /* ── SLIDES ── */
     #header-placeholder { height: 120px; }
@@ -169,8 +170,8 @@
       transition: all 0.2s; position: relative;
     }
     .task-checkbox:checked {
-      background: var(--accent-done);
-      border-color: var(--accent-done);
+      background: var(--tab-accent, var(--accent-done));
+      border-color: var(--tab-accent, var(--accent-done));
     }
     .task-checkbox:checked::after {
       content: ''; position: absolute;
@@ -194,22 +195,28 @@
       padding: 14px 14px 14px 12px;
       margin-bottom: 10px;
       display: flex; align-items: center; gap: 12px;
-      transition: transform 0.15s;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
       user-select: none;
       -webkit-user-select: none;
     }
     .habit-card:active { transform: scale(0.98); }
+    .habit-card.hold-active {
+      transform: scale(1.01);
+      box-shadow: 0 0 0 2px rgba(181,123,238,0.3);
+      border-color: var(--tab-accent, var(--accent-habit));
+    }
+    .habit-card.bad.hold-active { box-shadow: 0 0 0 2px rgba(235,94,40,0.3); border-color: var(--accent-bad); }
 
     .habit-checkbox {
       width: 22px; height: 22px; min-width: 22px;
-      border-radius: 50%; border: 2px solid var(--accent-habit);
+      border-radius: 50%; border: 2px solid var(--tab-accent, var(--accent-habit));
       cursor: pointer; appearance: none; -webkit-appearance: none;
       background: var(--surface2);
       transition: all 0.2s; position: relative; flex-shrink: 0;
     }
     .habit-checkbox:checked {
-      background: var(--accent-habit);
-      border-color: var(--accent-habit);
+      background: var(--tab-accent, var(--accent-habit));
+      border-color: var(--tab-accent, var(--accent-habit));
     }
     .habit-checkbox:checked::after {
       content: ''; position: absolute;
@@ -317,7 +324,7 @@
       position: sticky; left: 0; z-index: 2;
       border-right: 2px solid var(--border);
     }
-    #stats-table th.today-th { color: var(--accent-habit); font-weight: 700; }
+    #stats-table th.today-th { color: var(--tab-accent, var(--accent-habit)); font-weight: 700; }
 
     #stats-table td {
       border: 1px solid var(--border);
@@ -342,7 +349,7 @@
       font-weight: 700; font-size: 13px;
     }
     #stats-table td.day-future { opacity: 0.2; }
-    #stats-table td.day-today { box-shadow: inset 0 0 0 2px var(--accent-habit); }
+    #stats-table td.day-today { box-shadow: inset 0 0 0 2px var(--tab-accent, var(--accent-habit)); }
 
     /* ── MOVE MODAL ── */
     #move-modal {
@@ -400,7 +407,7 @@
       text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px;
     }
     #palette-grid {
-      display: grid; grid-template-columns: repeat(5, 1fr);
+      display: grid; grid-template-columns: repeat(4, 1fr);
       gap: 10px; margin-bottom: 24px;
     }
     .palette-chip {
@@ -415,7 +422,7 @@
     }
     .palette-chip:active { transform: scale(0.95); }
     .palette-preview { display: flex; gap: 3px; }
-    .palette-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .palette-dot { width: 10px; height: 10px; border-radius: 50%; outline: 1px solid rgba(0,0,0,0.12); }
     .palette-name {
       font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
       text-transform: uppercase; color: var(--text-dim); text-align: center;
@@ -427,6 +434,138 @@
       color: var(--text); cursor: pointer; transition: background 0.15s;
     }
     #settings-close:active { background: var(--surface2); }
+
+    /* ── HABIT GROUP HEADERS ── */
+    .habit-group-header {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-faint);
+      padding: 8px 2px 6px;
+    }
+    .habit-group-header + .habit-group-header { margin-top: 8px; }
+    .habit-group-header.bad-header { color: var(--accent-bad); opacity: 0.8; }
+
+    /* ── NUMBER / TIME INPUTS IN HABIT CARD ── */
+    .habit-num-input, .habit-time-input {
+      width: 72px; height: 34px; flex-shrink: 0;
+      background: var(--surface2);
+      border: 1.5px solid var(--tab-accent, var(--accent-habit));
+      border-radius: 8px; color: var(--text);
+      font-family: 'Space Mono', monospace; font-size: 13px;
+      text-align: center; padding: 0 4px; outline: none;
+      -webkit-appearance: none; appearance: none;
+    }
+    .habit-num-input:focus, .habit-time-input:focus { border-width: 2px; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    /* ── BAD HABIT CARD ── */
+    .habit-card.bad { border-color: var(--accent-bad); }
+    .habit-card.bad .habit-checkbox { border-color: var(--accent-bad) !important; }
+    .habit-card.bad .habit-checkbox:checked {
+      background: var(--accent-bad) !important;
+      border-color: var(--accent-bad) !important;
+    }
+    .habit-card.bad .habit-num-input,
+    .habit-card.bad .habit-time-input { border-color: var(--accent-bad); }
+
+    /* ── HABIT FAB ── */
+    #habit-fab {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+      right: 20px; z-index: 50;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--tab-accent, var(--accent-habit));
+      color: #fff; font-size: 28px; border: none;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s;
+    }
+    #habit-fab.visible { display: flex; }
+    #habit-fab:active { transform: scale(0.9); }
+
+    /* ── HABIT ADD MODAL ── */
+    #habit-add-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      align-items: flex-end; justify-content: center;
+    }
+    #habit-add-modal.open { display: flex; }
+    #habit-add-sheet {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+      width: 100%; max-width: 500px;
+      animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    #habit-add-sheet h3 { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
+    #habit-add-name-row { margin-bottom: 16px; }
+    .hform-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+    }
+    .hform-chips { display: flex; gap: 8px; margin-bottom: 4px; }
+    .hform-chip {
+      flex: 1; padding: 10px 6px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 10px; font-family: 'Syne', sans-serif;
+      font-size: 12px; font-weight: 700; color: var(--text-dim);
+      cursor: pointer; text-align: center; transition: all 0.15s;
+    }
+    .hform-chip:active { transform: scale(0.96); }
+    .hform-chip.active { color: var(--text); border-color: var(--tab-accent, var(--accent-habit)); }
+    .hform-chip.kind-bad.active { color: var(--accent-bad); border-color: var(--accent-bad); }
+    #habit-add-confirm {
+      width: 100%; padding: 14px; margin-top: 20px;
+      background: var(--tab-accent, var(--accent-habit));
+      border: none; border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+      color: #fff; cursor: pointer; transition: opacity 0.15s;
+    }
+    #habit-add-confirm:active { opacity: 0.8; }
+    #habit-add-cancel {
+      width: 100%; padding: 13px; background: none; margin-top: 8px;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 14px;
+      color: var(--text-dim); cursor: pointer;
+    }
+
+    /* ── STATS: BAD / PRE-CREATION / DELETED CELLS ── */
+    #stats-table td.day-done-bad {
+      background: var(--accent-bad); color: var(--bg); font-weight: 700;
+    }
+    #stats-table td.habit-name-cell.bad-name { color: var(--accent-bad); }
+    #stats-table td.day-pre { background: var(--bg); opacity: 0.18; }
+    #stats-table td.habit-name-cell.deleted-name { font-style: italic; opacity: 0.5; }
+
+    /* ── HABIT EDIT MODAL ── */
+    #habit-edit-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      align-items: flex-end; justify-content: center;
+    }
+    #habit-edit-modal.open { display: flex; }
+    #habit-edit-sheet {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+      width: 100%; max-width: 500px;
+      animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    #habit-edit-sheet h3 { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
+    #habit-edit-confirm {
+      width: 100%; padding: 14px; margin-top: 16px;
+      background: var(--tab-accent, var(--accent-habit));
+      border: none; border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+      color: #fff; cursor: pointer; transition: opacity 0.15s;
+    }
+    #habit-edit-confirm:active { opacity: 0.8; }
+    #habit-edit-cancel {
+      width: 100%; padding: 13px; background: none; margin-top: 8px;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 14px;
+      color: var(--text-dim); cursor: pointer;
+    }
 
     /* ── TOAST ── */
     #toast {
@@ -499,10 +638,38 @@
     <button class="add-btn" id="add-someday-btn">+</button>
   </div>
 </div>
-<div class="add-area" id="add-habits">
-  <div class="add-row">
-    <input class="add-input" id="input-habits" placeholder="Нова звичка…" maxlength="200" />
-    <button class="add-btn" id="add-habits-btn">+</button>
+<button id="habit-fab">+</button>
+
+<div id="habit-add-modal">
+  <div id="habit-add-sheet">
+    <h3>Нова звичка</h3>
+    <div id="habit-add-name-row" class="add-row">
+      <input class="add-input" id="input-habits" placeholder="Назва звички…" maxlength="200" />
+    </div>
+    <div class="hform-section-label">Тип</div>
+    <div class="hform-chips" id="habit-type-chips">
+      <button class="hform-chip active" data-val="checkbox">☑ Чекбокс</button>
+      <button class="hform-chip" data-val="number"># Число</button>
+      <button class="hform-chip" data-val="time">⏱ Час</button>
+    </div>
+    <div class="hform-section-label" style="margin-top:14px">Категорія</div>
+    <div class="hform-chips" id="habit-kind-chips">
+      <button class="hform-chip active" data-val="good">↑ Гарна</button>
+      <button class="hform-chip kind-bad" data-val="bad">↓ Погана</button>
+    </div>
+    <button id="habit-add-confirm">Додати</button>
+    <button id="habit-add-cancel">Скасувати</button>
+  </div>
+</div>
+
+<div id="habit-edit-modal">
+  <div id="habit-edit-sheet">
+    <h3>Редагувати звичку</h3>
+    <div class="add-row">
+      <input class="add-input" id="input-habit-edit" maxlength="200" />
+    </div>
+    <button id="habit-edit-confirm">Зберегти</button>
+    <button id="habit-edit-cancel">Скасувати</button>
   </div>
 </div>
 
@@ -536,6 +703,7 @@ const PALETTES = {
       '--bg':'#0f0f14','--surface':'#17171f','--surface2':'#1e1e28',
       '--border':'#2a2a38','--accent-today':'#ff6b35','--accent-soon':'#f7c948',
       '--accent-someday':'#6c8fff','--accent-done':'#4ecdc4','--accent-habit':'#b57bee',
+      '--accent-bad':'#ff9f43',
       '--text':'#e8e8f0','--text-dim':'#7070a0','--text-faint':'#3a3a55'
     }
   },
@@ -546,6 +714,7 @@ const PALETTES = {
       '--bg':'#1e1e2e','--surface':'#313244','--surface2':'#45475a',
       '--border':'#585b70','--accent-today':'#f38ba8','--accent-soon':'#fab387',
       '--accent-someday':'#89b4fa','--accent-done':'#a6e3a1','--accent-habit':'#cba6f7',
+      '--accent-bad':'#fab387',
       '--text':'#cdd6f4','--text-dim':'#a6adc8','--text-faint':'#6c7086'
     }
   },
@@ -556,6 +725,7 @@ const PALETTES = {
       '--bg':'#1a1b26','--surface':'#24283b','--surface2':'#2a2e42',
       '--border':'#3b4261','--accent-today':'#f7768e','--accent-soon':'#e0af68',
       '--accent-someday':'#7aa2f7','--accent-done':'#9ece6a','--accent-habit':'#bb9af7',
+      '--accent-bad':'#ff9e64',
       '--text':'#c0caf5','--text-dim':'#787c99','--text-faint':'#3b4261'
     }
   },
@@ -566,6 +736,7 @@ const PALETTES = {
       '--bg':'#191724','--surface':'#1f1d2e','--surface2':'#26233a',
       '--border':'#403d52','--accent-today':'#eb6f92','--accent-soon':'#f6c177',
       '--accent-someday':'#9ccfd8','--accent-done':'#31748f','--accent-habit':'#c4a7e7',
+      '--accent-bad':'#f6c177',
       '--text':'#e0def4','--text-dim':'#908caa','--text-faint':'#403d52'
     }
   },
@@ -576,7 +747,30 @@ const PALETTES = {
       '--bg':'#2e3440','--surface':'#3b4252','--surface2':'#434c5e',
       '--border':'#4c566a','--accent-today':'#bf616a','--accent-soon':'#ebcb8b',
       '--accent-someday':'#81a1c1','--accent-done':'#a3be8c','--accent-habit':'#b48ead',
+      '--accent-bad':'#d08770',
       '--text':'#eceff4','--text-dim':'#d8dee9','--text-faint':'#616e88'
+    }
+  },
+  warm: {
+    name: 'Ember',
+    dots: ['#252422','#EB5E28','#FFFCF2'],
+    vars: {
+      '--bg':'#252422','--surface':'#403D39','--surface2':'#504b47',
+      '--border':'#5c5752','--accent-today':'#EB5E28','--accent-soon':'#e07a53',
+      '--accent-someday':'#CCC5B9','--accent-done':'#CCC5B9','--accent-habit':'#EB5E28',
+      '--accent-bad':'#c0392b',
+      '--text':'#FFFCF2','--text-dim':'#CCC5B9','--text-faint':'#5c5752'
+    }
+  },
+  light: {
+    name: 'Azur',
+    dots: ['#d5ebee','#e63946','#1d3557'],
+    vars: {
+      '--bg':'#f1faee','--surface':'#eaf4f5','--surface2':'#d5ebee',
+      '--border':'#a8dadc','--accent-today':'#e63946','--accent-soon':'#457b9d',
+      '--accent-someday':'#457b9d','--accent-done':'#457b9d','--accent-habit':'#e63946',
+      '--tab-accent':'#e63946','--accent-bad':'#e76f51',
+      '--text':'#1d3557','--text-dim':'#457b9d','--text-faint':'#a8dadc'
     }
   }
 };
@@ -593,7 +787,9 @@ function saveSettings() {
 function applyPalette(name) {
   if (!PALETTES[name]) return;
   const p = PALETTES[name];
-  Object.entries(p.vars).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  const root = document.documentElement;
+  Object.entries(p.vars).forEach(([k,v]) => root.style.setProperty(k,v));
+  if (!p.vars['--tab-accent']) root.style.removeProperty('--tab-accent');
   settings.palette = name;
   saveSettings();
   document.querySelector('meta[name="theme-color"]').content = p.vars['--bg'];
@@ -640,16 +836,27 @@ function saveTasks() { localStorage.setItem('taskflow_tasks', JSON.stringify(tas
 // ─── HABITS STATE ─────────────────────────────────────────────────
 let habits = [];
 let habitLog = {};
+let deletedHabits = [];
 
 function todayKey() { return new Date().toISOString().slice(0,10); }
 
 function loadHabits() {
   try { const h = localStorage.getItem('taskflow_habits'); if (h) habits = JSON.parse(h); } catch(e) {}
   try { const l = localStorage.getItem('taskflow_habit_log'); if (l) habitLog = JSON.parse(l); } catch(e) {}
+  try { const d = localStorage.getItem('taskflow_deleted_habits'); if (d) deletedHabits = JSON.parse(d); } catch(e) {}
+  // migrate old array format → object format
+  Object.keys(habitLog).forEach(key => {
+    if (Array.isArray(habitLog[key])) {
+      const obj = {};
+      habitLog[key].forEach(id => { obj[id] = true; });
+      habitLog[key] = obj;
+    }
+  });
 }
 function saveHabits() {
   localStorage.setItem('taskflow_habits', JSON.stringify(habits));
   localStorage.setItem('taskflow_habit_log', JSON.stringify(habitLog));
+  localStorage.setItem('taskflow_deleted_habits', JSON.stringify(deletedHabits));
 }
 
 // ─── RENDER TASKS ─────────────────────────────────────────────────
@@ -699,39 +906,79 @@ function updateCounts() {
     document.getElementById('count-'+l).textContent = cnt ? cnt : '';
   });
   const total = habits.length;
-  const done = (habitLog[todayKey()]||[]).length;
+  const todayLog = habitLog[todayKey()] || {};
+  const done = habits.filter(h => todayLog[h.id] !== undefined).length;
   const el = document.getElementById('count-habits');
   el.textContent = total ? done+'/'+total : '';
 }
 
 // ─── RENDER HABITS ────────────────────────────────────────────────
+function habitCardHtml(h, todayLog) {
+  const val = todayLog[h.id];
+  const done = val !== undefined;
+  const isBad = h.kind === 'bad';
+  const type = h.type || 'checkbox';
+  let control = '';
+  if (type === 'checkbox') {
+    control = `<input type="checkbox" class="habit-checkbox" ${done?'checked':''} data-id="${h.id}" />`;
+  } else if (type === 'number') {
+    control = `<input type="number" class="habit-num-input" data-id="${h.id}" value="${done?val:''}" min="0" placeholder="0" />`;
+  } else if (type === 'time') {
+    control = `<input type="time" class="habit-time-input" data-id="${h.id}" value="${done?val:''}" />`;
+  }
+  return `
+  <div class="habit-card${isBad?' bad':''}" data-id="${h.id}">
+    ${control}
+    <span class="habit-name${done&&type==='checkbox'?' done-habit':''}">${escHtml(h.name)}</span>
+    <button class="task-delete habit-delete" data-id="${h.id}" title="Видалити">🗑</button>
+  </div>`;
+}
+
 function renderHabits() {
   const el = document.getElementById('slide-habits');
   if (!habits.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">✨</div>Додайте першу звичку</div>`;
     updateCounts(); return;
   }
-  const todayDone = new Set(habitLog[todayKey()]||[]);
-  el.innerHTML = habits.map(h => {
-    const done = todayDone.has(h.id);
-    return `
-    <div class="habit-card" data-id="${h.id}">
-      <input type="checkbox" class="habit-checkbox" ${done?'checked':''} data-id="${h.id}" />
-      <span class="habit-name${done?' done-habit':''}">${escHtml(h.name)}</span>
-      <button class="task-delete habit-delete" data-id="${h.id}" title="Видалити">🗑</button>
-    </div>`;
-  }).join('');
+  const todayLog = habitLog[todayKey()] || {};
+  const good = habits.filter(h => (h.kind||'good') === 'good');
+  const bad  = habits.filter(h => h.kind === 'bad');
+  let html = '';
+  if (good.length) {
+    html += `<div class="habit-group-header">Гарні звички</div>`;
+    html += good.map(h => habitCardHtml(h, todayLog)).join('');
+  }
+  if (bad.length) {
+    html += `<div class="habit-group-header bad-header">Погані звички</div>`;
+    html += bad.map(h => habitCardHtml(h, todayLog)).join('');
+  }
+  el.innerHTML = html;
+  el.querySelectorAll('.habit-card').forEach(attachHabitLongPress);
   updateCounts();
 }
+
+document.addEventListener('input', e => {
+  const isNum = e.target.classList.contains('habit-num-input');
+  const isTime = e.target.classList.contains('habit-time-input');
+  if (!isNum && !isTime) return;
+  const id = e.target.dataset.id;
+  const key = todayKey();
+  if (!habitLog[key]) habitLog[key] = {};
+  const raw = e.target.value;
+  if (raw === '' || raw === null) delete habitLog[key][id];
+  else habitLog[key][id] = isNum ? Number(raw) : raw;
+  saveHabits();
+  updateCounts();
+  if (currentList === 'stats') renderStats();
+});
 
 document.addEventListener('change', e => {
   if (e.target.classList.contains('habit-checkbox')) {
     const id = e.target.dataset.id;
     const key = todayKey();
-    if (!habitLog[key]) habitLog[key] = [];
-    const idx = habitLog[key].indexOf(id);
-    if (idx >= 0) habitLog[key].splice(idx,1);
-    else habitLog[key].push(id);
+    if (!habitLog[key]) habitLog[key] = {};
+    if (e.target.checked) habitLog[key][id] = true;
+    else delete habitLog[key][id];
     saveHabits(); renderHabits();
     if (currentList==='stats') renderStats();
   } else if (e.target.classList.contains('task-checkbox')) {
@@ -762,8 +1009,10 @@ document.addEventListener('click', e => {
   const hd = e.target.closest('.habit-delete');
   if (hd) {
     const id = hd.dataset.id;
-    habits = habits.filter(h => h.id!==id);
-    Object.keys(habitLog).forEach(k => { habitLog[k] = habitLog[k].filter(x => x!==id); });
+    const h = habits.find(h => h.id === id);
+    if (h) deletedHabits.push({...h, deletedAt: Date.now()});
+    habits = habits.filter(h => h.id !== id);
+    // keep habitLog intact so stats still show historical data
     saveHabits(); renderHabits();
     if (currentList==='stats') renderStats();
     return;
@@ -775,16 +1024,109 @@ document.addEventListener('click', e => {
   }
 });
 
-function addHabit() {
+// ─── HABIT LONG PRESS (EDIT) ──────────────────────────────────────
+function attachHabitLongPress(card) {
+  let timer;
+  const start = (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    timer = setTimeout(() => {
+      card.classList.add('hold-active');
+      openHabitEditModal(card.dataset.id);
+    }, 600);
+  };
+  const cancel = () => { clearTimeout(timer); card.classList.remove('hold-active'); };
+  card.addEventListener('touchstart', start, {passive: true});
+  card.addEventListener('touchend', cancel);
+  card.addEventListener('touchmove', cancel);
+  card.addEventListener('mousedown', start);
+  card.addEventListener('mouseup', cancel);
+  card.addEventListener('mouseleave', cancel);
+}
+
+let editingHabitId = null;
+
+function openHabitEditModal(id) {
+  const h = habits.find(h => h.id === id);
+  if (!h) return;
+  editingHabitId = id;
+  document.getElementById('input-habit-edit').value = h.name;
+  document.getElementById('habit-edit-modal').classList.add('open');
+  setTimeout(() => {
+    const inp = document.getElementById('input-habit-edit');
+    inp.focus(); inp.select();
+  }, 150);
+}
+function closeHabitEditModal() {
+  document.getElementById('habit-edit-modal').classList.remove('open');
+  document.querySelectorAll('.habit-card.hold-active').forEach(c => c.classList.remove('hold-active'));
+  editingHabitId = null;
+}
+document.getElementById('habit-edit-confirm').addEventListener('click', () => {
+  if (!editingHabitId) return;
+  const name = document.getElementById('input-habit-edit').value.trim();
+  if (!name) { document.getElementById('input-habit-edit').focus(); return; }
+  const h = habits.find(h => h.id === editingHabitId);
+  if (h) { h.name = name; saveHabits(); renderHabits(); }
+  closeHabitEditModal();
+  if (currentList === 'stats') renderStats();
+});
+document.getElementById('habit-edit-cancel').addEventListener('click', closeHabitEditModal);
+document.getElementById('habit-edit-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('habit-edit-modal')) closeHabitEditModal();
+});
+document.getElementById('input-habit-edit').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('habit-edit-confirm').click();
+});
+
+// ─── HABIT ADD MODAL ──────────────────────────────────────────────
+let pendingType = 'checkbox';
+let pendingKind = 'good';
+
+function openHabitModal() {
+  pendingType = 'checkbox';
+  pendingKind = 'good';
+  document.getElementById('input-habits').value = '';
+  document.querySelectorAll('#habit-type-chips .hform-chip').forEach(c =>
+    c.classList.toggle('active', c.dataset.val === pendingType));
+  document.querySelectorAll('#habit-kind-chips .hform-chip').forEach(c =>
+    c.classList.toggle('active', c.dataset.val === pendingKind));
+  document.getElementById('habit-add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('input-habits').focus(), 150);
+}
+function closeHabitModal() {
+  document.getElementById('habit-add-modal').classList.remove('open');
+}
+
+document.getElementById('habit-fab').addEventListener('click', openHabitModal);
+document.getElementById('habit-add-cancel').addEventListener('click', closeHabitModal);
+document.getElementById('habit-add-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('habit-add-modal')) closeHabitModal();
+});
+document.querySelectorAll('#habit-type-chips .hform-chip').forEach(chip =>
+  chip.addEventListener('click', () => {
+    pendingType = chip.dataset.val;
+    document.querySelectorAll('#habit-type-chips .hform-chip').forEach(c => c.classList.toggle('active', c === chip));
+  }));
+document.querySelectorAll('#habit-kind-chips .hform-chip').forEach(chip =>
+  chip.addEventListener('click', () => {
+    pendingKind = chip.dataset.val;
+    document.querySelectorAll('#habit-kind-chips .hform-chip').forEach(c => c.classList.toggle('active', c === chip));
+  }));
+document.getElementById('habit-add-confirm').addEventListener('click', () => {
   const input = document.getElementById('input-habits');
   const name = input.value.trim();
-  if (!name) return;
-  habits.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2), name, createdAt:Date.now()});
+  if (!name) { input.focus(); return; }
+  habits.push({
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2),
+    name, type: pendingType, kind: pendingKind, createdAt: Date.now()
+  });
   saveHabits(); renderHabits();
-  input.value=''; input.focus();
-}
-document.getElementById('add-habits-btn').addEventListener('click', addHabit);
-document.getElementById('input-habits').addEventListener('keydown', e => { if(e.key==='Enter') addHabit(); });
+  closeHabitModal();
+  if (currentList === 'stats') renderStats();
+});
+document.getElementById('input-habits').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('habit-add-confirm').click();
+});
 
 // ─── ADD TASKS ────────────────────────────────────────────────────
 function addTask(list) {
@@ -872,8 +1214,18 @@ function renderStats() {
   const nextBtn = document.getElementById('stats-next');
   nextBtn.disabled = isCurrentMonth;
 
+  // Build display list: active habits + deleted habits that have data this month
+  const mo = String(statsMonth+1).padStart(2,'0');
+  const monthPrefix = `${statsYear}-${mo}-`;
+  const displayHabits = [...habits];
+  deletedHabits.forEach(dh => {
+    if (habits.some(h => h.id === dh.id)) return; // re-added edge case
+    const hasData = Object.keys(habitLog).some(k => k.startsWith(monthPrefix) && (habitLog[k]||{})[dh.id] !== undefined);
+    if (hasData) displayHabits.push({...dh, _deleted: true});
+  });
+
   const table = document.getElementById('stats-table');
-  if (!habits.length) {
+  if (!displayHabits.length) {
     table.innerHTML = '<tr><td style="padding:40px 20px;text-align:center;color:var(--text-faint);border:none;white-space:nowrap">Немає звичок</td></tr>';
     return;
   }
@@ -886,18 +1238,32 @@ function renderStats() {
   thead += '</tr></thead>';
 
   let tbody = '<tbody>';
-  habits.forEach(h => {
-    tbody += `<tr><td class="habit-name-cell" title="${escHtml(h.name)}">${escHtml(h.name)}</td>`;
+  displayHabits.forEach(h => {
+    const isBad = h.kind === 'bad';
+    const type = h.type || 'checkbox';
+    const createdDate = h.createdAt ? new Date(h.createdAt).toISOString().slice(0,10) : null;
+    let nameCls = 'habit-name-cell';
+    if (isBad) nameCls += ' bad-name';
+    if (h._deleted) nameCls += ' deleted-name';
+    tbody += `<tr><td class="${nameCls}" title="${escHtml(h.name)}">${escHtml(h.name)}</td>`;
     for (let d=1; d<=daysInMonth; d++) {
-      const dateKey = `${statsYear}-${String(statsMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isDone = (habitLog[dateKey]||[]).includes(h.id);
-      const isFuture = isCurrentMonth && d>todayDay;
-      const isToday = isCurrentMonth && d===todayDay;
+      const dateKey = `${statsYear}-${mo}-${String(d).padStart(2,'0')}`;
+      // day before habit was created → pre-creation cell
+      if (createdDate && dateKey < createdDate) {
+        tbody += `<td class="day-cell day-pre"></td>`;
+        continue;
+      }
+      const val = (habitLog[dateKey]||{})[h.id];
+      const isDone = val !== undefined;
+      const isFuture = isCurrentMonth && d > todayDay;
+      const isToday = isCurrentMonth && d === todayDay;
       let cls = 'day-cell';
-      if (isDone) cls += ' day-done';
+      if (isDone) cls += isBad ? ' day-done-bad' : ' day-done';
       else if (isFuture) cls += ' day-future';
       else if (isToday) cls += ' day-today';
-      tbody += `<td class="${cls}">${isDone?'✓':''}</td>`;
+      let content = '';
+      if (isDone) content = type === 'checkbox' ? '✓' : String(val);
+      tbody += `<td class="${cls}">${content}</td>`;
     }
     tbody += '</tr>';
   });
@@ -919,7 +1285,7 @@ document.getElementById('stats-next').addEventListener('click', () => {
 // ─── TABS & SWIPE ─────────────────────────────────────────────────
 const N = 6;
 const slideOrder = ['today','soon','someday','done','habits','stats'];
-const ADD_SLIDE  = ['today','soon','someday', null, 'habits',  null];
+const ADD_SLIDE = ['today','soon','someday', null, null, null];
 
 function goToSlide(idx) {
   currentSlide = idx;
@@ -932,6 +1298,7 @@ function goToSlide(idx) {
     if (!l) return;
     document.getElementById('add-'+l).classList.toggle('visible', i===idx);
   });
+  document.getElementById('habit-fab').classList.toggle('visible', currentList === 'habits');
   if (currentList==='stats') renderStats();
 }
 
