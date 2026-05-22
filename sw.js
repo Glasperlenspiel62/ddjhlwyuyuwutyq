@@ -1,4 +1,4 @@
-const CACHE = 'taskflow-v2.0';
+const CACHE = 'taskflow-v2.1';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
