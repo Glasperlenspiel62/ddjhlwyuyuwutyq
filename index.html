@@ -555,7 +555,7 @@ document.getElementById('btn-archive').addEventListener('click', async () => {
   } catch(e) {
     if (e.name !== 'AbortError') {
       // fallback download
-      const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+      const blob = new Blob(['\ufeff' + content], {type:'text/plain;charset=utf-8'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `taskflow_archive_${new Date().toISOString().slice(0,10)}.txt`;
