@@ -1,15 +1,15 @@
 {
-  "name": "TaskFlow",
-  "short_name": "TaskFlow",
-  "description": "Трекер задач з чотирма списками",
+  "name": "Flow",
+  "short_name": "Flow",
+  "description": "Трекер задач та звичок",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f0f14",
-  "theme_color": "#0f0f14",
+  "background_color": "#0e0e10",
+  "theme_color": "#0e0e10",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230f0f14'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E✓%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%230e0e10'/%3E%3Ccircle cx='96' cy='96' r='48' fill='none' stroke='%235b8dee' stroke-width='12'/%3E%3Ccircle cx='96' cy='96' r='16' fill='%235b8dee'/%3E%3C/svg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml"
     }
