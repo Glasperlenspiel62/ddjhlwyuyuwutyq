@@ -559,6 +559,22 @@
       color: var(--on-accent); border-bottom-color: rgba(255,255,255,0.25);
     }
     body[data-palette="crimson"] .habit-name { color: var(--on-accent); }
+    body[data-palette="mono"] .habit-item.good { background: #111111; border-color: #111111; color: #fff; }
+    body[data-palette="mono"] .habit-item.bad  { background: #ffffff; border-color: #c0c0c0; color: #111111; }
+    body[data-palette="mono"] .habit-item.good .card-btn { color: #fff; }
+    body[data-palette="mono"] .habit-item.bad  .card-btn { color: #111111; }
+    body[data-palette="mono"] .habit-item.good .habit-check { border-color: #fff; background: transparent; }
+    body[data-palette="mono"] .habit-item.good .habit-check:checked { background: #fff; border-color: #fff; }
+    body[data-palette="mono"] .habit-item.good .habit-check:checked::after { border-color: #111111; }
+    body[data-palette="mono"] .habit-item.bad  .habit-check { border-color: #111111; background: transparent; }
+    body[data-palette="mono"] .habit-item.bad  .habit-check:checked { background: #111111; border-color: #111111; }
+    body[data-palette="mono"] .habit-item.bad  .habit-check:checked::after { border-color: #ffffff; }
+    body[data-palette="mono"] .habit-item.good .habit-num-input,
+    body[data-palette="mono"] .habit-item.good .habit-time-input { border-color: #fff; background: transparent; color: #fff; }
+    body[data-palette="mono"] .habit-item.bad  .habit-num-input,
+    body[data-palette="mono"] .habit-item.bad  .habit-time-input { border-color: #111111; background: transparent; color: #111111; }
+    body[data-palette="mono"] .habit-add-btn.green { background: #111111; border: none; color: #fff; }
+    body[data-palette="mono"] .habit-add-btn.red   { background: #ffffff; border: 1px solid #c0c0c0; color: #111111; }
     body[data-palette="crimson"] .habit-add-btn.green { background: var(--good); border: none; color: #fff; }
     body[data-palette="crimson"] .habit-add-btn.red   { background: var(--bad);  border: none; color: #fff; }
   </style>
@@ -764,6 +780,21 @@ const PALETTES = {
       '--btn-h-bg':'#c4a7e722','--btn-h-bd':'#c4a7e74a',
       '--done':'#4a9e8a',
       '--on-accent':'#fff','--focus-ring':'#9ccfd828',
+    }
+  },
+  mono: {
+    name: 'Моно',
+    dots: ['#f9f9f9','#111111','#555555'],
+    v: {
+      '--bg':'#f9f9f9','--surface':'#ffffff','--surface2':'#efefef','--border':'#c0c0c0',
+      '--text':'#080808','--text-dim':'#505050','--text-faint':'#a0a0a0',
+      '--accent-t':'#111111','--accent-h':'#111111',
+      '--btn-t-bg':'#11111112','--btn-t-bd':'#11111140',
+      '--btn-h-bg':'#11111112','--btn-h-bd':'#11111140',
+      '--done':'#505050',
+      '--on-accent':'#ffffff','--focus-ring':'#11111128',
+      '--good':'#1a1a1a','--good-bg':'#1a1a1a0e','--good-bd':'#1a1a1a55',
+      '--bad':'#888888','--bad-bg':'#88888810','--bad-bd':'#88888845',
     }
   },
   light: {

@@ -1,4 +1,4 @@
-const CACHE = 'flow-v2.1';
+const CACHE = 'flow-v2.2';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
