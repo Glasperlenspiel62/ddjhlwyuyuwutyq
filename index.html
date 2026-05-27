@@ -319,6 +319,7 @@
     .habit-name {
       flex: 1; font-size: 15px; line-height: 1.4; word-break: break-word;
     }
+    body.habit-edit-mode .habit-name { cursor: text; }
     .habit-field { display: flex; align-items: center; flex-shrink: 0; }
     .habit-item.good .habit-check:checked { background: var(--good); border-color: var(--good); }
     .habit-item.bad  .habit-check:checked { background: var(--bad);  border-color: var(--bad); }
@@ -409,6 +410,10 @@
     #calendar-table tbody td:not(:first-child):active { background: var(--surface2); }
     #calendar-table .cal-today { color: var(--accent-t); }
     #calendar-table thead .cal-today { font-weight: 700; }
+    #calendar-table tbody td.cal-disabled {
+      background: repeating-linear-gradient(135deg, transparent, transparent 3px, var(--border) 3px, var(--border) 4px);
+      cursor: default; color: transparent; pointer-events: none;
+    }
 
     /* ── HABIT ADD MODAL ── */
     .sheet-text-input {
@@ -696,6 +701,7 @@
     <button id="habits-date-btn" class="ghost-btn"></button>
     <button id="habits-today-btn" class="ghost-btn accent">Сьогодні</button>
     <input type="date" id="habits-date-input" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
+    <input type="date" id="habit-setdate-input" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
   </div>
   <div id="habits-content" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
   <div id="habits-calendar-wrap">
@@ -1240,6 +1246,13 @@ document.getElementById('habits-date-input').addEventListener('change', e => {
   else setTrackingDate(todayKey());
 });
 
+document.getElementById('habit-setdate-input').addEventListener('change', e => {
+  if (!habitSetDateId || !e.target.value) { habitSetDateId = null; return; }
+  const h = habits.find(h => h.id === habitSetDateId);
+  if (h) { h.created = new Date(e.target.value + 'T00:00:00').getTime(); saveHabits(); renderHabits(); renderCalendar(); }
+  habitSetDateId = null;
+});
+
 // ── HABITS STATE ──────────────────────────────────────────────────
 let habits = [];
 let habitNotes = {};
@@ -1252,6 +1265,7 @@ let habitConfirmCb = null;
 // ── CALENDAR STATE ────────────────────────────────────────────────
 let calView = 'week';
 let calCursor = new Date();
+let habitSetDateId = null;
 
 function loadHabits() {
   try { const s = localStorage.getItem('fl_h'); if (s) habits = JSON.parse(s); } catch(e) {}
@@ -1330,8 +1344,15 @@ function renderCalendar() {
   }).join('');
 
   const tbody = active.map(h => {
+    const createdKey = h.created != null ? new Date(h.created).toISOString().slice(0, 10) : null;
+    const hiddenKey  = (h.hidden && h.hiddenAt != null) ? new Date(h.hiddenAt).toISOString().slice(0, 10) : null;
     const cells = dates.map(d => {
       const ds = formatDate(d);
+      const beforeCreation = createdKey != null && ds < createdKey;
+      const afterRemoval   = hiddenKey  != null && ds > hiddenKey;
+      if (beforeCreation || afterRemoval) {
+        return `<td class="cal-disabled${ds === today ? ' cal-today' : ''}"></td>`;
+      }
       const v  = habitValues[`${h.id}_${ds}`];
       const cls = ds === today ? ' cal-today' : '';
       let display = '';
@@ -1363,12 +1384,16 @@ function renderHabits() {
   const dk = trackingDateKey || todayKey();
   const isPast = dk !== todayKey();
 
-  let visible = habits.filter(h => !h.hidden);
+  let visible;
   if (isPast) {
-    visible = visible.filter(h =>
-      habitValues[`${h.id}_${dk}`] !== undefined ||
-      habitNotes[`${h.id}_${dk}`]
-    );
+    const dkTs = new Date(dk + 'T00:00:00').getTime();
+    visible = habits.filter(h => {
+      if (h.created != null && h.created > dkTs + 86399999) return false;
+      if (h.hidden && h.hiddenAt != null && h.hiddenAt < dkTs) return false;
+      return true;
+    });
+  } else {
+    visible = habits.filter(h => !h.hidden);
   }
 
   if (!visible.length) {
@@ -1418,6 +1443,7 @@ function habitHTML(h) {
       <div class="habit-name">${esc(h.name)}</div>
       <div class="habit-field">${field}</div>
       <div class="habit-acts">
+        <button class="card-btn habit-act habit-setdate" data-id="${h.id}" title="Дата створення">${h.created ? new Date(h.created).toLocaleDateString('uk-UA',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '?'}</button>
         <button class="card-btn habit-act habit-hide" data-id="${h.id}" title="Прибрати">⊖</button>
         <button class="card-btn habit-act habit-del" data-id="${h.id}" title="Видалити">✕</button>
       </div>
@@ -1533,11 +1559,43 @@ habitsContent.addEventListener('click', e => {
   const reorderBtn = e.target.closest('.habit-reorder .reorder-btn');
   if (reorderBtn) { reorderHabit(reorderBtn.dataset.id, reorderBtn.dataset.d); return; }
 
+  const setDateBtn = e.target.closest('.habit-setdate');
+  if (setDateBtn) {
+    const h = habits.find(h => h.id === setDateBtn.dataset.id);
+    if (!h) return;
+    habitSetDateId = h.id;
+    const inp = document.getElementById('habit-setdate-input');
+    inp.value = h.created ? new Date(h.created).toISOString().slice(0, 10) : '';
+    inp.max = todayKey();
+    try { inp.showPicker(); } catch(e2) { inp.click(); }
+    return;
+  }
+
   const hideBtn = e.target.closest('.habit-hide');
   if (hideBtn) { hideHabit(hideBtn.dataset.id); return; }
 
   const delBtn = e.target.closest('.habit-del');
   if (delBtn) { deleteHabit(delBtn.dataset.id); return; }
+
+  if (habitEditMode && e.target.classList.contains('habit-name')) {
+    const id = e.target.closest('.habit-item').dataset.id;
+    const habit = habits.find(h => h.id === id);
+    if (!habit) return;
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.className = 'task-text-input'; inp.value = habit.name;
+    e.target.replaceWith(inp);
+    inp.focus(); inp.select();
+    const save = () => {
+      const val = inp.value.trim() || habit.name;
+      if (val !== habit.name) { habit.name = val; saveHabits(); }
+      const div = document.createElement('div');
+      div.className = 'habit-name'; div.textContent = val;
+      inp.replaceWith(div);
+    };
+    inp.addEventListener('blur', save);
+    inp.addEventListener('keydown', e2 => { if (e2.key === 'Enter') inp.blur(); });
+    return;
+  }
 
   const noteBtn = e.target.closest('.habit-note-btn');
   if (!noteBtn) return;

@@ -1,4 +1,4 @@
-const CACHE = 'flow-v5';
+const CACHE = 'flow-v6';
 
 self.addEventListener('install', () => self.skipWaiting());
 
