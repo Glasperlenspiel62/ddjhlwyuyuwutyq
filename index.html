@@ -182,12 +182,18 @@
       border-radius: 6px; border: 2px solid var(--border);
       background: var(--surface2);
       cursor: pointer; appearance: none; -webkit-appearance: none;
-      position: relative; flex-shrink: 0;
+      position: relative; flex-shrink: 0; padding: 0;
       transition: background 0.15s, border-color 0.15s;
     }
     .task-check { margin-top: 1px; }
     .task-check:checked { background: var(--accent-t); border-color: var(--accent-t); }
-    .task-check:checked::after, .habit-check:checked::after {
+    .habit-check[data-state="false"]::after {
+      content: '✕'; position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 11px; line-height: 1; color: inherit;
+      border: none; width: auto; height: auto;
+    }
+    .task-check:checked::after, .habit-check[data-state="true"]::after {
       content: ''; position: absolute; left: 5px; top: 2px;
       width: 7px; height: 11px;
       border: 2px solid var(--bg); border-top: none; border-left: none;
@@ -321,8 +327,10 @@
     }
     body.habit-edit-mode .habit-name { cursor: text; }
     .habit-field { display: flex; align-items: center; flex-shrink: 0; }
-    .habit-item.good .habit-check:checked { background: var(--good); border-color: var(--good); }
-    .habit-item.bad  .habit-check:checked { background: var(--bad);  border-color: var(--bad); }
+    .habit-item.good .habit-check[data-state="true"]  { background: var(--good); border-color: var(--good); }
+    .habit-item.good .habit-check[data-state="false"] { background: var(--good); border-color: var(--good); color: var(--bg); }
+    .habit-item.bad  .habit-check[data-state="true"]  { background: var(--bad);  border-color: var(--bad); }
+    .habit-item.bad  .habit-check[data-state="false"] { background: var(--bad);  border-color: var(--bad);  color: var(--bg); }
     /* ── FIELD-INPUT ── */
     .field-input {
       background: var(--surface2); border: 1px solid var(--border);
@@ -409,6 +417,7 @@
     }
     #calendar-table tbody td:not(:first-child):active { background: var(--surface2); }
     #calendar-table .cal-today { color: var(--accent-t); }
+    #calendar-table .cal-cross { color: var(--border); font-size: 11px; }
     #calendar-table thead .cal-today { font-weight: 700; }
     #calendar-table tbody td.cal-disabled {
       background: repeating-linear-gradient(135deg, transparent, transparent 3px, var(--border) 3px, var(--border) 4px);
@@ -465,6 +474,24 @@
       font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
       text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
     }
+    .settings-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; margin-bottom: 20px; cursor: pointer;
+      font-size: 14px; color: var(--text);
+    }
+    .settings-toggle input { display: none; }
+    .settings-toggle-track {
+      width: 42px; height: 24px; border-radius: 12px;
+      background: var(--border); position: relative;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .settings-toggle input:checked + .settings-toggle-track { background: var(--accent-t); }
+    .settings-toggle-track::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+      transition: transform 0.2s;
+    }
+    .settings-toggle input:checked + .settings-toggle-track::after { transform: translateX(18px); }
     #data-btns {
       display: flex; gap: 8px; margin-bottom: 20px;
     }
@@ -536,18 +563,21 @@
       border-color: #fff; background: transparent;
     }
     body[data-palette="crimson"] .task-check:checked,
-    body[data-palette="crimson"] .habit-check:checked {
+    body[data-palette="crimson"] .habit-check[data-state="true"] {
       background: #fff; border-color: #fff;
     }
+    body[data-palette="crimson"] .habit-check[data-state="false"] { background: #fff; border-color: #fff; }
+    body[data-palette="crimson"] .habit-item.good .habit-check[data-state="false"] { color: var(--good); }
+    body[data-palette="crimson"] .habit-item.bad  .habit-check[data-state="false"] { color: var(--bad); }
     body[data-palette="crimson"] .task-check:checked::after,
-    body[data-palette="crimson"] .habit-check:checked::after {
+    body[data-palette="crimson"] .habit-check[data-state="true"]::after {
       border-color: var(--c-card);
     }
-    body[data-palette="crimson"] .habit-item.good .habit-check:checked::after,
-    body[data-palette="crimson"] .habit-item.bad  .habit-check:checked::after {
+    body[data-palette="crimson"] .habit-item.good .habit-check[data-state="true"]::after,
+    body[data-palette="crimson"] .habit-item.bad  .habit-check[data-state="true"]::after {
       border-color: var(--good);
     }
-    body[data-palette="crimson"] .habit-item.bad .habit-check:checked::after {
+    body[data-palette="crimson"] .habit-item.bad .habit-check[data-state="true"]::after {
       border-color: var(--bad);
     }
     body[data-palette="crimson"] .habit-num-input,
@@ -569,11 +599,13 @@
     body[data-palette="mono"] .habit-item.good .card-btn { color: #fff; }
     body[data-palette="mono"] .habit-item.bad  .card-btn { color: #111111; }
     body[data-palette="mono"] .habit-item.good .habit-check { border-color: #fff; background: transparent; }
-    body[data-palette="mono"] .habit-item.good .habit-check:checked { background: #fff; border-color: #fff; }
-    body[data-palette="mono"] .habit-item.good .habit-check:checked::after { border-color: #111111; }
+    body[data-palette="mono"] .habit-item.good .habit-check[data-state="true"]  { background: #fff; border-color: #fff; }
+    body[data-palette="mono"] .habit-item.good .habit-check[data-state="false"] { background: #fff; border-color: #fff; color: #111111; }
+    body[data-palette="mono"] .habit-item.good .habit-check[data-state="true"]::after { border-color: #111111; }
     body[data-palette="mono"] .habit-item.bad  .habit-check { border-color: #111111; background: transparent; }
-    body[data-palette="mono"] .habit-item.bad  .habit-check:checked { background: #111111; border-color: #111111; }
-    body[data-palette="mono"] .habit-item.bad  .habit-check:checked::after { border-color: #ffffff; }
+    body[data-palette="mono"] .habit-item.bad  .habit-check[data-state="true"]  { background: #111111; border-color: #111111; }
+    body[data-palette="mono"] .habit-item.bad  .habit-check[data-state="false"] { background: #111111; border-color: #111111; color: #ffffff; }
+    body[data-palette="mono"] .habit-item.bad  .habit-check[data-state="true"]::after { border-color: #ffffff; }
     body[data-palette="mono"] .habit-item.good .habit-num-input,
     body[data-palette="mono"] .habit-item.good .habit-time-input { border-color: #fff; background: transparent; color: #fff; }
     body[data-palette="mono"] .habit-item.bad  .habit-num-input,
@@ -588,11 +620,13 @@
     body[data-palette="navy"] .habit-item.good .card-btn { color: #fff; }
     body[data-palette="navy"] .habit-item.bad  .card-btn { color: #1b263b; }
     body[data-palette="navy"] .habit-item.good .habit-check { border-color: #fff; background: transparent; }
-    body[data-palette="navy"] .habit-item.good .habit-check:checked { background: #fff; border-color: #fff; }
-    body[data-palette="navy"] .habit-item.good .habit-check:checked::after { border-color: #1b263b; }
+    body[data-palette="navy"] .habit-item.good .habit-check[data-state="true"]  { background: #fff; border-color: #fff; }
+    body[data-palette="navy"] .habit-item.good .habit-check[data-state="false"] { background: #fff; border-color: #fff; color: #1b263b; }
+    body[data-palette="navy"] .habit-item.good .habit-check[data-state="true"]::after { border-color: #1b263b; }
     body[data-palette="navy"] .habit-item.bad  .habit-check { border-color: #1b263b; background: transparent; }
-    body[data-palette="navy"] .habit-item.bad  .habit-check:checked { background: #1b263b; border-color: #1b263b; }
-    body[data-palette="navy"] .habit-item.bad  .habit-check:checked::after { border-color: #ffffff; }
+    body[data-palette="navy"] .habit-item.bad  .habit-check[data-state="true"]  { background: #1b263b; border-color: #1b263b; }
+    body[data-palette="navy"] .habit-item.bad  .habit-check[data-state="false"] { background: #1b263b; border-color: #1b263b; color: #ffffff; }
+    body[data-palette="navy"] .habit-item.bad  .habit-check[data-state="true"]::after { border-color: #ffffff; }
     body[data-palette="navy"] .habit-item.good .habit-num-input,
     body[data-palette="navy"] .habit-item.good .habit-time-input { border-color: #fff; background: transparent; color: #fff; }
     body[data-palette="navy"] .habit-item.bad  .habit-num-input,
@@ -605,11 +639,13 @@
     body[data-palette="ember"] .habit-item.good .card-btn { color: #fff; }
     body[data-palette="ember"] .habit-item.bad  .card-btn { color: #f95738; }
     body[data-palette="ember"] .habit-item.good .habit-check { border-color: #fff; background: transparent; }
-    body[data-palette="ember"] .habit-item.good .habit-check:checked { background: #fff; border-color: #fff; }
-    body[data-palette="ember"] .habit-item.good .habit-check:checked::after { border-color: #f95738; }
+    body[data-palette="ember"] .habit-item.good .habit-check[data-state="true"]  { background: #fff; border-color: #fff; }
+    body[data-palette="ember"] .habit-item.good .habit-check[data-state="false"] { background: #fff; border-color: #fff; color: #f95738; }
+    body[data-palette="ember"] .habit-item.good .habit-check[data-state="true"]::after { border-color: #f95738; }
     body[data-palette="ember"] .habit-item.bad  .habit-check { border-color: #f95738; background: transparent; }
-    body[data-palette="ember"] .habit-item.bad  .habit-check:checked { background: #f95738; border-color: #f95738; }
-    body[data-palette="ember"] .habit-item.bad  .habit-check:checked::after { border-color: #ffffff; }
+    body[data-palette="ember"] .habit-item.bad  .habit-check[data-state="true"]  { background: #f95738; border-color: #f95738; }
+    body[data-palette="ember"] .habit-item.bad  .habit-check[data-state="false"] { background: #f95738; border-color: #f95738; color: #ffffff; }
+    body[data-palette="ember"] .habit-item.bad  .habit-check[data-state="true"]::after { border-color: #ffffff; }
     body[data-palette="ember"] .habit-item.good .habit-num-input,
     body[data-palette="ember"] .habit-item.good .habit-time-input { border-color: #fff; background: transparent; color: #fff; }
     body[data-palette="ember"] .habit-item.bad  .habit-num-input,
@@ -622,11 +658,13 @@
     body[data-palette="ocean"] .habit-item.good .card-btn { color: #fff; }
     body[data-palette="ocean"] .habit-item.bad  .card-btn { color: #0d3b66; }
     body[data-palette="ocean"] .habit-item.good .habit-check { border-color: #fff; background: transparent; }
-    body[data-palette="ocean"] .habit-item.good .habit-check:checked { background: #fff; border-color: #fff; }
-    body[data-palette="ocean"] .habit-item.good .habit-check:checked::after { border-color: #0d3b66; }
+    body[data-palette="ocean"] .habit-item.good .habit-check[data-state="true"]  { background: #fff; border-color: #fff; }
+    body[data-palette="ocean"] .habit-item.good .habit-check[data-state="false"] { background: #fff; border-color: #fff; color: #0d3b66; }
+    body[data-palette="ocean"] .habit-item.good .habit-check[data-state="true"]::after { border-color: #0d3b66; }
     body[data-palette="ocean"] .habit-item.bad  .habit-check { border-color: #0d3b66; background: transparent; }
-    body[data-palette="ocean"] .habit-item.bad  .habit-check:checked { background: #0d3b66; border-color: #0d3b66; }
-    body[data-palette="ocean"] .habit-item.bad  .habit-check:checked::after { border-color: #ffffff; }
+    body[data-palette="ocean"] .habit-item.bad  .habit-check[data-state="true"]  { background: #0d3b66; border-color: #0d3b66; }
+    body[data-palette="ocean"] .habit-item.bad  .habit-check[data-state="false"] { background: #0d3b66; border-color: #0d3b66; color: #ffffff; }
+    body[data-palette="ocean"] .habit-item.bad  .habit-check[data-state="true"]::after { border-color: #ffffff; }
     body[data-palette="ocean"] .habit-item.good .habit-num-input,
     body[data-palette="ocean"] .habit-item.good .habit-time-input { border-color: #fff; background: transparent; color: #fff; }
     body[data-palette="ocean"] .habit-item.bad  .habit-num-input,
@@ -639,11 +677,13 @@
     body[data-palette="forest"] .habit-item.good .card-btn { color: #fff; }
     body[data-palette="forest"] .habit-item.bad  .card-btn { color: #335c67; }
     body[data-palette="forest"] .habit-item.good .habit-check { border-color: #fff; background: transparent; }
-    body[data-palette="forest"] .habit-item.good .habit-check:checked { background: #fff; border-color: #fff; }
-    body[data-palette="forest"] .habit-item.good .habit-check:checked::after { border-color: #335c67; }
+    body[data-palette="forest"] .habit-item.good .habit-check[data-state="true"]  { background: #fff; border-color: #fff; }
+    body[data-palette="forest"] .habit-item.good .habit-check[data-state="false"] { background: #fff; border-color: #fff; color: #335c67; }
+    body[data-palette="forest"] .habit-item.good .habit-check[data-state="true"]::after { border-color: #335c67; }
     body[data-palette="forest"] .habit-item.bad  .habit-check { border-color: #335c67; background: transparent; }
-    body[data-palette="forest"] .habit-item.bad  .habit-check:checked { background: #335c67; border-color: #335c67; }
-    body[data-palette="forest"] .habit-item.bad  .habit-check:checked::after { border-color: #ffffff; }
+    body[data-palette="forest"] .habit-item.bad  .habit-check[data-state="true"]  { background: #335c67; border-color: #335c67; }
+    body[data-palette="forest"] .habit-item.bad  .habit-check[data-state="false"] { background: #335c67; border-color: #335c67; color: #ffffff; }
+    body[data-palette="forest"] .habit-item.bad  .habit-check[data-state="true"]::after { border-color: #ffffff; }
     body[data-palette="forest"] .habit-item.good .habit-num-input,
     body[data-palette="forest"] .habit-item.good .habit-time-input { border-color: #fff; background: transparent; color: #fff; }
     body[data-palette="forest"] .habit-item.bad  .habit-num-input,
@@ -776,6 +816,11 @@
     <div class="settings-head">Налаштування</div>
     <div class="settings-sub">Палітра</div>
     <div id="palette-grid"></div>
+    <div class="settings-sub">Звички</div>
+    <label class="settings-toggle">
+      <span>Показувати хрестик в календарі</span>
+      <input type="checkbox" id="setting-cal-cross"><span class="settings-toggle-track"></span>
+    </label>
     <div class="settings-sub">Дані</div>
     <div id="data-btns">
       <button id="btn-export">Зберегти у файл</button>
@@ -975,7 +1020,7 @@ const PALETTES = {
 };
 
 // ── SETTINGS ─────────────────────────────────────────────────────
-let settings = { palette: 'dark' };
+let settings = { palette: 'dark', showCalCross: true };
 
 function loadSettings() {
   try { const s = localStorage.getItem('fl_s'); if (s) settings = {...settings,...JSON.parse(s)}; } catch(e) {}
@@ -1356,8 +1401,12 @@ function renderCalendar() {
       const v  = habitValues[`${h.id}_${ds}`];
       const cls = ds === today ? ' cal-today' : '';
       let display = '';
-      if (v !== undefined && v !== false && v !== '') {
-        display = h.type === 'checkbox' ? '✓' : v;
+      if (v === true)  { display = '✓'; }
+      else if (v === false) { if (settings.showCalCross !== false) display = '<span class="cal-cross">✗</span>'; }
+      else if (v !== undefined && v !== '') { display = v; }
+      else if (v === undefined && ds <= today) {
+        if (h.type === 'number') display = '0';
+        else if (h.type === 'time') display = '00:00';
       }
       return `<td data-id="${h.id}" data-date="${ds}" class="${cls}">${display}</td>`;
     }).join('');
@@ -1426,7 +1475,8 @@ function habitHTML(h) {
   let field;
   const val = habitValues[`${h.id}_${dk}`];
   if (h.type === 'checkbox') {
-    field = `<input type="checkbox" class="habit-check"${val ? ' checked' : ''}>`;
+    const triState = val === true ? 'true' : val === false ? 'false' : '';
+    field = `<button class="habit-check" data-state="${triState}"></button>`;
   } else if (h.type === 'number') {
     field = `<input type="number" class="field-input habit-num-input" min="0" placeholder="0" value="${val || ''}">`;
   } else {
@@ -1605,11 +1655,15 @@ habitsContent.addEventListener('click', e => {
   ta.style.display = open ? 'block' : 'none';
   if (open) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
 });
-habitsContent.addEventListener('change', e => {
-  if (!e.target.classList.contains('habit-check')) return;
-  const id = e.target.closest('.habit-item').dataset.id;
+habitsContent.addEventListener('click', e => {
+  const btn = e.target.closest('.habit-check');
+  if (!btn) return;
+  const id = btn.closest('.habit-item').dataset.id;
   const key = `${id}_${trackingDateKey || todayKey()}`;
-  if (e.target.checked) habitValues[key] = true; else delete habitValues[key];
+  const cur = btn.dataset.state;
+  if (cur === '') { btn.dataset.state = 'true';  habitValues[key] = true; }
+  else if (cur === 'true')  { btn.dataset.state = 'false'; habitValues[key] = false; }
+  else                      { btn.dataset.state = '';      delete habitValues[key]; }
   saveHabitValues();
 });
 
@@ -1735,7 +1789,13 @@ document.getElementById('move-modal').addEventListener('click', e => {
 // Settings
 document.getElementById('btn-settings').addEventListener('click', () => {
   buildPaletteGrid();
+  document.getElementById('setting-cal-cross').checked = settings.showCalCross !== false;
   document.getElementById('settings-modal').classList.add('open');
+});
+document.getElementById('setting-cal-cross').addEventListener('change', e => {
+  settings.showCalCross = e.target.checked;
+  saveSettings();
+  renderCalendar();
 });
 document.getElementById('settings-close').addEventListener('click', () =>
   document.getElementById('settings-modal').classList.remove('open'));
